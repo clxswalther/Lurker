@@ -6,8 +6,10 @@ use Lurker\Event\FilesystemEvent;
 use Lurker\Exception\InvalidArgumentException;
 use Lurker\Resource\DirectoryResource;
 use Lurker\Resource\FileResource;
+use Lurker\Resource\GlobResource;
 use Lurker\Resource\ResourceInterface;
 use Lurker\Resource\TrackedResource;
+use Lurker\Tracker\GlobIteratorTracker;
 use Lurker\Tracker\InotifyTracker;
 use Lurker\Tracker\RecursiveIteratorTracker;
 use Lurker\Tracker\TrackerInterface;
@@ -86,7 +88,10 @@ class ResourceWatcher
             );
         }
 
-        if (!$resource instanceof ResourceInterface) {
+        if ($this->getTracker() instanceof GlobIteratorTracker) {
+            $resource = new GlobResource($resource, null, $this->getTracker()->getGlobPattern());
+        }
+        elseif (!$resource instanceof ResourceInterface) {
             if (is_file($resource)) {
                 $resource = new FileResource($resource);
             } elseif (is_dir($resource)) {
